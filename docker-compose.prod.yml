@@ -1,0 +1,22 @@
+services:
+  db:
+    # restart: always = redémarre automatiquement si le conteneur plante
+    restart: always
+    env_file:
+      - .env.prod
+
+  backend:
+    build:
+      target: prod
+    restart: always
+    # En prod, on n'expose pas les ports directement — un reverse proxy
+    # (Nginx, Traefik) sera placé devant et gérera les connexions entrantes
+    env_file:
+      - .env.prod
+
+  frontend:
+    build:
+      target: prod
+    restart: always
+    env_file:
+      - .env.prod

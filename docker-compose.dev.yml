@@ -1,0 +1,32 @@
+services:
+  db:
+    # En dev, on expose le port PostgreSQL pour pouvoir se connecter
+    # depuis un outil comme TablePlus ou DBeaver
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env.dev
+
+  backend:
+    build:
+      target: dev  # utilise l'étape "dev" du Dockerfile
+    ports:
+      - "3001:3001"
+    volumes:
+      # Monte le code source local dans le conteneur → hot-reload
+      - ./backend:/app
+      # Exception : ne pas écraser le node_modules du conteneur
+      - /app/node_modules
+    env_file:
+      - .env.dev
+
+  frontend:
+    build:
+      target: dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    env_file:
+      - .env.dev

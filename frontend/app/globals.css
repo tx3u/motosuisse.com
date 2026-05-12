@@ -1,0 +1,365 @@
+@import "tailwindcss";
+
+/* ── Palette ─────────────────────────────────────────────── */
+:root {
+  --color-bg:          #0A0A0A;
+  --color-surface:     #111111;
+  --color-border:      #1F1F1F;
+  --color-text:        #F5F5F0;
+  --color-muted:       #6B6B6B;
+  --color-accent:      #E60024;
+  --color-accent-dim:  #A3001A;
+
+  /* aliases */
+  --bg:            var(--color-bg);
+  --surface:       var(--color-surface);
+  --surface-2:     #191919;
+  --border:        var(--color-border);
+  --border-strong: #2A2A2A;
+  --accent:        var(--color-accent);
+  --accent-hover:  var(--color-accent-dim);
+  --text-1:        var(--color-text);
+  --text-2:        var(--color-muted);
+  --text-3:        #444440;
+}
+
+@theme {
+  --color-brand:      #E60024;
+  --color-brand-dark: #A3001A;
+  --color-card:       #111111;
+  --font-display:     var(--font-display);
+  --font-body:        var(--font-body);
+  --font-mono:        var(--font-mono);
+}
+
+/* ── Reset ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; color-scheme: dark; }
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/* ── Placeholder ─────────────────────────────────────────── */
+.img-placeholder {
+  background: linear-gradient(160deg, #1a1a1a 0%, #0d0d0d 100%);
+}
+
+/* ── Ghost text ──────────────────────────────────────────── */
+.text-ghost {
+  -webkit-text-stroke: 1.5px rgba(245,245,240,0.15);
+  color: transparent;
+}
+
+/* ── Eyebrow label ───────────────────────────────────────── */
+.label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+/* ── Layout ──────────────────────────────────────────────── */
+.section-pad { padding-top: 96px; padding-bottom: 96px; }
+@media (max-width: 768px) {
+  .section-pad { padding-top: 64px; padding-bottom: 64px; }
+}
+.wrap {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+@media (max-width: 640px) {
+  .wrap { padding-left: 20px; padding-right: 20px; }
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  min-height: 48px;
+  padding: 0 32px;
+  transition: background 160ms ease, color 160ms ease,
+              border-color 160ms ease, box-shadow 160ms ease;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-text);
+  box-shadow: 0 0 0 0 rgba(230,0,36,0);
+}
+.btn-primary:hover {
+  background: var(--color-accent-dim);
+  box-shadow: 0 4px 20px rgba(230,0,36,0.35);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid rgba(245,245,240,0.15);
+}
+.btn-outline:hover {
+  border-color: rgba(245,245,240,0.35);
+  background: rgba(245,245,240,0.04);
+}
+
+/* ── Card — depth at rest, drama on hover ────────────────── */
+.card {
+  background: linear-gradient(180deg, #141414 0%, #0e0e0e 100%);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  /* base shadow for depth even at rest */
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.6),
+    0 4px 12px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.025);
+  transition:
+    border-color 200ms cubic-bezier(0.4,0,0.2,1),
+    box-shadow   200ms cubic-bezier(0.4,0,0.2,1),
+    transform    200ms cubic-bezier(0.4,0,0.2,1);
+}
+.card:hover {
+  border-color: rgba(230,0,36,0.55);
+  box-shadow:
+    0 6px 24px rgba(0,0,0,0.7),
+    0 20px 60px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(230,0,36,0.3),
+    0 0 40px rgba(230,0,36,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  transform: translateY(-6px);
+}
+
+/* ── Load animations ─────────────────────────────────────── */
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes navSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero stagger classes */
+.h-anim {
+  animation: heroFadeUp 0.9s cubic-bezier(0.16,1,0.3,1) backwards;
+}
+.h-anim-1 { animation-delay: 0ms; }
+.h-anim-2 { animation-delay: 80ms; }
+.h-anim-3 { animation-delay: 200ms; }
+.h-anim-4 { animation-delay: 340ms; }
+.h-anim-5 { animation-delay: 480ms; }
+
+/* Nav animation */
+.nav-anim {
+  animation: navSlideDown 0.7s cubic-bezier(0.16,1,0.3,1) backwards;
+}
+
+/* ── Bento image zoom on hover ───────────────────────────── */
+.card:hover .bento-img {
+  transform: scale(1.05);
+}
+
+/* ── Services page ───────────────────────────────────────── */
+.services-img {
+  border: none !important;
+  box-shadow: none !important;
+}
+.services-img:hover {
+  border: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+@media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: 1fr !important;
+    gap: 36px !important;
+  }
+  .services-img {
+    order: 1 !important;
+  }
+}
+
+/* ── Tips featured card ──────────────────────────────────── */
+.tips-featured {
+  background: linear-gradient(180deg, #141414 0%, #0e0e0e 100%);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.6), 0 4px 12px rgba(0,0,0,0.4);
+  transition: border-color 200ms, box-shadow 200ms, transform 200ms cubic-bezier(0.4,0,0.2,1);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+}
+.tips-featured:hover {
+  border-color: rgba(230,0,36,0.55);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.7), 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(230,0,36,0.3);
+  transform: translateY(-4px);
+}
+@media (max-width: 768px) {
+  .tips-featured {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Footer responsive ───────────────────────────────────── */
+.footer-main {
+  padding-top: 64px;
+  padding-bottom: 0;
+}
+.footer-bottom {
+  margin-top: 48px;
+  border-top: 1px solid var(--color-border);
+}
+@media (max-width: 640px) {
+  .footer-main {
+    padding-top: 36px;
+  }
+  .footer-bottom {
+    margin-top: 28px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+/* ── Admin layout ────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .admin-sidebar { display: none !important; }
+  .admin-main    { margin-left: 0 !important; padding: 24px 20px 64px !important; }
+  .dashboard-cols {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Admin hover utilities (CSS replaces inline JS handlers) ── */
+.adm-nav-link { transition: color 160ms ease, background 160ms ease !important; }
+.adm-nav-link:hover { color: #F5F5F0 !important; background: rgba(255,255,255,0.03) !important; }
+
+.adm-row { transition: background 150ms ease; }
+.adm-row:hover { background: rgba(255,255,255,0.02) !important; }
+
+.adm-link { transition: color 160ms ease; }
+.adm-link:hover { color: var(--color-accent) !important; }
+
+.adm-link-white { transition: color 160ms ease; }
+.adm-link-white:hover { color: #F5F5F0 !important; }
+
+.adm-btn-ghost {
+  transition: border-color 150ms ease, color 150ms ease !important;
+}
+.adm-btn-ghost:hover {
+  border-color: var(--color-accent) !important;
+  color: var(--color-accent) !important;
+}
+
+.adm-btn-danger {
+  transition: border-color 150ms ease, color 150ms ease !important;
+}
+.adm-btn-danger:hover {
+  border-color: #E60024 !important;
+  color: #E60024 !important;
+}
+
+.adm-btn-star {
+  transition: border-color 150ms ease, color 150ms ease, background 150ms ease !important;
+}
+.adm-btn-star:not(.active):hover {
+  border-color: rgba(255,184,0,0.4) !important;
+  color: #FFB800 !important;
+}
+
+/* ── Spinner ─────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+
+/* ── Navbar nav links (CSS hover — never gets stuck) ─────── */
+.nav-link .nav-link-text {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  transition: color 200ms ease;
+}
+.nav-link:hover .nav-link-text,
+.nav-link.active .nav-link-text { color: var(--color-text); }
+
+.nav-link .nav-link-bar {
+  display: block;
+  height: 1px;
+  width: 0;
+  background: var(--color-accent);
+  transition: width 220ms ease;
+}
+.nav-link.active .nav-link-bar { width: 100%; }
+.nav-link:hover .nav-link-bar  { width: 100%; }
+
+/* ── Navbar dashboard button ─────────────────────────────── */
+.nav-dash-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  text-decoration: none;
+  border: 1px solid rgba(232,25,44,0.35);
+  border-radius: 4px;
+  padding: 6px 12px;
+  background: rgba(232,25,44,0.08);
+  transition: background 200ms ease, border-color 200ms ease;
+}
+.nav-dash-btn:hover {
+  background: rgba(232,25,44,0.16);
+  border-color: rgba(232,25,44,0.6);
+}
+
+/* ── Footer links ────────────────────────────────────────── */
+.footer-link {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--color-muted);
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+.footer-link:hover { color: var(--color-text); }

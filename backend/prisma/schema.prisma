@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// A motorcycle listing. Slug is auto-generated and unique across all listings.
+model Moto {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  marque      String
+  modele      String
+  annee       Int
+  kilometrage Int
+  prix        Decimal  @db.Decimal(10, 2)
+  description String?
+  cylindree   String?
+  puissance   String?
+  type        String?
+  featured    Boolean  @default(false)
+  statut      Statut   @default(disponible)
+  images      String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  vues        Vue[]
+
+  /// Index on statut for fast "available first" ordering and filter queries.
+  @@index([statut])
+  /// Index on marque for case-insensitive brand filter queries.
+  @@index([marque])
+  /// Index on featured for homepage featured-listings queries.
+  @@index([featured])
+}
+
+/// A dealership service offering (sticker fitting, consignment, etc.).
+model Service {
+  id             Int      @id @default(autoincrement())
+  titre          String
+  description    String
+  prix_indicatif Decimal? @db.Decimal(10, 2)
+  image          String?
+  actif          Boolean  @default(true)
+  ordre          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+/// A blog article. Slug must be unique across all articles.
+model Article {
+  id               Int           @id @default(autoincrement())
+  titre            String
+  slug             String        @unique
+  contenu          String
+  image_couverture String?
+  statut           StatutArticle @default(brouillon)
+  meta_title       String?
+  meta_description String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  /// Index on statut for the public listing query (WHERE statut = 'publie').
+  @@index([statut])
+}
+
+/// A customer review displayed on the homepage when visible = true.
+model Review {
+  id        Int      @id @default(autoincrement())
+  nom       String
+  ville     String?
+  moto      String?
+  note      Int      @default(5)
+  texte     String
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Index on visible for the public homepage query (WHERE visible = true).
+  @@index([visible])
+}
+
+/// An inbound contact form submission.
+model Contact {
+  id        Int      @id @default(autoincrement())
+  nom       String
+  email     String
+  telephone String?
+  sujet     String?
+  message   String
+  lu        Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Index on lu so the admin can efficiently query unread messages.
+  @@index([lu])
+}
+
+/// The single admin account. Only one row expected; enforced by unique email.
+model Admin {
+  id                Int      @id @default(autoincrement())
+  email             String   @unique
+  mot_de_passe_hash String
+  createdAt         DateTime @default(now())
+}
+
+/// Daily view count for a motorcycle listing. One row per (moto, date) pair.
+model Vue {
+  id     Int      @id @default(autoincrement())
+  motoId Int
+  date   DateTime @default(now()) @db.Date
+  count  Int      @default(1)
+  moto   Moto     @relation(fields: [motoId], references: [id], onDelete: Cascade)
+
+  @@unique([motoId, date])
+}
+
+enum Statut {
+  disponible
+  vendu
+}
+
+enum StatutArticle {
+  publie
+  brouillon
+}
