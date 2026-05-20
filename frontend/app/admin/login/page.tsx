@@ -168,7 +168,7 @@ export default function AdminLoginPage() {
                   id="login-email"
                   type="email"
                   required
-                  placeholder="admin@motosuisse.com"
+                  placeholder="Utilisateur"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   style={{

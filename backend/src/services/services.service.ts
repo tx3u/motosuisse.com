@@ -1,77 +1,76 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { UploadService } from '../upload/upload.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 
+const CLOUDINARY_FOLDER = 'motosuisse/services';
+
 /**
- * Manages the dealership's service offerings (e.g. sticker fitting,
- * consignment sales).
- *
- * Services are ordered by the `ordre` field so the admin can control
- * display order without relying on insertion order.
+ * Extracts the Cloudinary public ID from a CDN URL.
+ * URL format: https://res.cloudinary.com/{cloud}/image/upload/v{n}/{public_id}.{ext}
  */
+function cloudinaryPublicId(url: string): string {
+  const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);
+  return match ? match[1] : url;
+}
+
 @Injectable()
 export class ServicesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly upload: UploadService,
+  ) {}
 
-  /**
-   * Returns all services sorted by `ordre` ascending.
-   * Includes both active and inactive services (filtering happens on the
-   * frontend for the public page, or can be added here if needed).
-   */
   findAll() {
     return this.prisma.service.findMany({ orderBy: { ordre: 'asc' } });
   }
 
-  /**
-   * Returns a single service by primary key.
-   *
-   * @param id - Service primary key.
-   * @throws {NotFoundException} If no service with the given ID exists.
-   */
   findOne(id: number) {
     return this.getOrFail(id);
   }
 
-  /**
-   * Creates a new service entry.
-   *
-   * @param dto - Validated creation payload.
-   */
   create(dto: CreateServiceDto) {
     return this.prisma.service.create({ data: dto });
   }
 
-  /**
-   * Updates one or more fields of an existing service.
-   *
-   * @param id  - Service primary key.
-   * @param dto - Partial update payload.
-   * @throws {NotFoundException} If no service with the given ID exists.
-   */
   async update(id: number, dto: UpdateServiceDto) {
     await this.getOrFail(id);
     return this.prisma.service.update({ where: { id }, data: dto });
   }
 
   /**
-   * Permanently deletes a service entry.
-   *
-   * @param id - Service primary key.
-   * @throws {NotFoundException} If no service with the given ID exists.
+   * Uploads an image to Cloudinary and sets it as the service's cover image.
+   * Replaces the previous image if there was one (and removes it from Cloudinary).
    */
-  async remove(id: number) {
-    await this.getOrFail(id);
-    return this.prisma.service.delete({ where: { id } });
+  async setImage(id: number, buffer: Buffer) {
+    const service = await this.getOrFail(id);
+    const newUrl = await this.upload.uploadImage(buffer, CLOUDINARY_FOLDER);
+    if (service.image) {
+      // Best-effort cleanup of the previous image; don't block the request.
+      await this.upload.deleteImage(cloudinaryPublicId(service.image)).catch(() => undefined);
+    }
+    return this.prisma.service.update({ where: { id }, data: { image: newUrl } });
   }
 
   /**
-   * Fetches a service by primary key or throws if it does not exist.
-   * Used internally to pre-validate IDs before mutations.
-   *
-   * @param id - Service primary key.
-   * @throws {NotFoundException} If no service with the given ID exists.
+   * Removes the image from the service and deletes it from Cloudinary.
    */
+  async removeImage(id: number) {
+    const service = await this.getOrFail(id);
+    if (!service.image) throw new NotFoundException('Aucune image à supprimer');
+    await this.upload.deleteImage(cloudinaryPublicId(service.image)).catch(() => undefined);
+    return this.prisma.service.update({ where: { id }, data: { image: null } });
+  }
+
+  async remove(id: number) {
+    const service = await this.getOrFail(id);
+    if (service.image) {
+      await this.upload.deleteImage(cloudinaryPublicId(service.image)).catch(() => undefined);
+    }
+    return this.prisma.service.delete({ where: { id } });
+  }
+
   private async getOrFail(id: number) {
     const service = await this.prisma.service.findUnique({ where: { id } });
     if (!service) throw new NotFoundException('Service introuvable');

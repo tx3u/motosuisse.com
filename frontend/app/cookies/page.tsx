@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { clearConsent } from "@/lib/consent";
 
 const TYPES = [
   {
@@ -24,7 +27,7 @@ const TYPES = [
     requis: false,
     description: "Mémorisent vos préférences de navigation pour améliorer votre expérience.",
     cookies: [
-      { nom: "consent", duree: "12 mois", finalite: "Mémorisation de votre choix de cookies" },
+      { nom: "cookie_consent", duree: "12 mois", finalite: "Mémorisation de votre choix de cookies" },
     ],
   },
 ];
@@ -71,7 +74,6 @@ export default function CookiesPage() {
       <div className="wrap" style={{ paddingTop: 64, paddingBottom: 96 }}>
         <div style={{ maxWidth: 760 }}>
 
-          {/* Intro */}
           <div style={{ marginBottom: 48, paddingBottom: 48, borderBottom: "1px solid var(--color-border)" }}>
             <h2 style={{ fontFamily: "var(--font-display)", fontSize: 22, color: "var(--color-text)", letterSpacing: "0.04em", marginBottom: 20 }}>
               QU&apos;EST-CE QU&apos;UN COOKIE ?
@@ -80,11 +82,10 @@ export default function CookiesPage() {
               Un cookie est un petit fichier texte déposé sur votre appareil lors de la visite d&apos;un site web. Il permet au site de mémoriser des informations sur votre visite, comme votre langue préférée ou d&apos;autres paramètres.
             </p>
             <p style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: 14, color: "var(--color-muted)", lineHeight: 1.78, letterSpacing: "0.01em" }}>
-              Sur motosuisse.com, nous utilisons uniquement les cookies nécessaires au bon fonctionnement du site et à l&apos;amélioration de votre expérience. Nous n&apos;utilisons aucun cookie publicitaire ou de tracking commercial.
+              Sur motosuisse.com, nous utilisons des cookies nécessaires au bon fonctionnement du site ainsi que Google Analytics pour mesurer notre audience. Aucun cookie publicitaire ni de tracking commercial n&apos;est utilisé.
             </p>
           </div>
 
-          {/* Cookie types */}
           {TYPES.map(({ categorie, requis, description, cookies }) => (
             <div key={categorie} style={{ marginBottom: 48, paddingBottom: 48, borderBottom: "1px solid var(--color-border)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
@@ -111,7 +112,6 @@ export default function CookiesPage() {
                 {description}
               </p>
 
-              {/* Cookie table */}
               <div className="card" style={{ padding: 0, overflow: "hidden" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", padding: "10px 20px", borderBottom: "1px solid #1A1A1A" }}>
                   {["Nom", "Durée", "Finalité"].map((h) => (
@@ -129,13 +129,12 @@ export default function CookiesPage() {
             </div>
           ))}
 
-          {/* Gestion */}
           <div style={{ marginBottom: 48, paddingBottom: 48, borderBottom: "1px solid var(--color-border)" }}>
             <h2 style={{ fontFamily: "var(--font-display)", fontSize: 22, color: "var(--color-text)", letterSpacing: "0.04em", marginBottom: 20 }}>
               GÉRER VOS PRÉFÉRENCES
             </h2>
             <p style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: 14, color: "var(--color-muted)", lineHeight: 1.78, marginBottom: 14, letterSpacing: "0.01em" }}>
-              Vous pouvez à tout moment modifier vos préférences de cookies en utilisant les paramètres de votre navigateur. Notez que la désactivation de certains cookies peut affecter le fonctionnement du site.
+              Vous pouvez à tout moment modifier vos préférences de cookies via le bouton ci-dessous, ou en utilisant les paramètres de votre navigateur. Notez que la désactivation de certains cookies peut affecter le fonctionnement du site.
             </p>
             <p style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: 14, color: "var(--color-muted)", lineHeight: 1.78, letterSpacing: "0.01em" }}>
               La plupart des navigateurs proposent des options pour bloquer ou supprimer les cookies dans leurs paramètres de confidentialité (Chrome, Firefox, Safari, Edge).
@@ -143,6 +142,22 @@ export default function CookiesPage() {
           </div>
 
           <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => { clearConsent(); window.location.reload(); }}
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: 13,
+                color: "var(--color-accent)",
+                background: "transparent",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+                textDecoration: "none",
+              }}
+            >
+              Modifier mes préférences cookies →
+            </button>
             <Link href="/confidentialite" style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--color-accent)", textDecoration: "none" }}>
               Politique de confidentialité →
             </Link>

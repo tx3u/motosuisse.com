@@ -122,7 +122,7 @@ export function Footer() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
           <span style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: 12, color: "var(--color-muted)" }}>
-            © 2025 Motosuisse.com. All rights reserved
+            © 2026 Motosuisse.com. All rights reserved
           </span>
           {[{ label: "Confidentialité", href: "/confidentialite" }, { label: "Cookies", href: "/cookies" }].map(({ label, href }) => (
             <Link key={label} href={href} className="footer-link" style={{ fontSize: 12 }}>

@@ -25,8 +25,8 @@ const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 function setRefreshCookie(res: Response, token: string): void {
   res.cookie('refresh_token', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: process.env.COOKIE_SECURE === 'true',
+    sameSite: 'lax',
     maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     path: '/api/auth',
   });
@@ -85,8 +85,8 @@ export class AuthController {
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('refresh_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: process.env.COOKIE_SECURE === 'true',
+      sameSite: 'lax',
       path: '/api/auth',
     });
     return { message: 'Déconnecté' };

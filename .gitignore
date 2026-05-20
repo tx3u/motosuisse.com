@@ -57,3 +57,8 @@ backend/prisma/migrations/dev.db-journal
 .turbo
 *.tsbuildinfo
 next-env.d.ts
+
+# Backups locaux
+*.bak
+*.bak2
+*.bak3

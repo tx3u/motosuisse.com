@@ -1,11 +1,11 @@
 "use client";
 
-import { Eye, EyeOff, Trash2, Plus, Wrench, X, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, Trash2, Plus, Wrench, X, CheckCircle, ImagePlus, ImageOff } from "lucide-react";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Image from "next/image";
 import { api, CreateServicePayload } from "@/lib/api";
-
 
 const emptyForm: CreateServicePayload = { titre: "", description: "", prix_indicatif: undefined, ordre: 0 };
 
@@ -26,10 +26,14 @@ export default function AdminServicesPage() {
 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<CreateServicePayload>(emptyForm);
+  const [pendingImage, setPendingImage] = useState<File | null>(null);
+  const [pendingPreview, setPendingPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [uploadingId, setUploadingId] = useState<number | null>(null);
+  const fileInputs = useRef<Record<number, HTMLInputElement | null>>({});
 
   const { data: services = [], isLoading } = useQuery({
     queryKey: ["admin-services"],
@@ -38,13 +42,30 @@ export default function AdminServicesPage() {
 
   const activeCount = services.filter((s) => s.actif).length;
 
+  function handlePickPendingImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPendingImage(file);
+    setPendingPreview(URL.createObjectURL(file));
+  }
+
+  function clearPendingImage() {
+    setPendingImage(null);
+    if (pendingPreview) URL.revokeObjectURL(pendingPreview);
+    setPendingPreview(null);
+  }
+
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.services.create(form);
+      const created = await api.services.create(form);
+      if (pendingImage) {
+        await api.services.setImage(created.id, pendingImage);
+      }
       queryClient.invalidateQueries({ queryKey: ["admin-services"] });
       setForm(emptyForm);
+      clearPendingImage();
       setSaved(true);
       setTimeout(() => { setSaved(false); setShowForm(false); }, 1500);
     } finally {
@@ -73,6 +94,30 @@ export default function AdminServicesPage() {
     }
   }
 
+  async function handleReplaceImage(id: number, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingId(id);
+    try {
+      await api.services.setImage(id, file);
+      queryClient.invalidateQueries({ queryKey: ["admin-services"] });
+    } finally {
+      setUploadingId(null);
+      e.target.value = ""; // reset so picking the same file again still triggers change
+    }
+  }
+
+  async function handleRemoveImage(id: number) {
+    if (!confirm("Supprimer l'image de ce service ?")) return;
+    setUploadingId(id);
+    try {
+      await api.services.removeImage(id);
+      queryClient.invalidateQueries({ queryKey: ["admin-services"] });
+    } finally {
+      setUploadingId(null);
+    }
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: "#0A0A0A", display: "flex" }}>
       <AdminSidebar />
@@ -90,7 +135,7 @@ export default function AdminServicesPage() {
             )}
           </div>
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => { setShowForm(!showForm); if (showForm) clearPendingImage(); }}
             className="btn btn-primary"
             style={{ gap: 8, fontSize: 11 }}
           >
@@ -134,6 +179,29 @@ export default function AdminServicesPage() {
                   onBlur={(e) => (e.currentTarget.style.borderColor = "#1F1F1F")} />
               </div>
 
+              {/* Image upload */}
+              <div style={{ marginBottom: 20 }}>
+                <span style={labelStyle}>Image</span>
+                {pendingPreview ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ position: "relative", width: 120, height: 80, borderRadius: 4, overflow: "hidden", border: "1px solid #2A2A2A" }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={pendingPreview} alt="aperçu" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </div>
+                    <button type="button" onClick={clearPendingImage}
+                      style={{ background: "none", border: "1px solid #2A2A2A", color: "#888", padding: "8px 12px", borderRadius: 4, cursor: "pointer", fontSize: 11, fontFamily: "var(--font-body)" }}>
+                      Retirer l&apos;image
+                    </button>
+                  </div>
+                ) : (
+                  <label style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 14px", border: "1px dashed #2A2A2A", borderRadius: 4, cursor: "pointer", color: "#888", fontSize: 12, fontFamily: "var(--font-body)" }}>
+                    <ImagePlus size={14} strokeWidth={1.5} />
+                    Choisir une image
+                    <input type="file" accept="image/*" onChange={handlePickPendingImage} style={{ display: "none" }} />
+                  </label>
+                )}
+              </div>
+
               <div style={{ marginBottom: 20 }}>
                 <label htmlFor="svc-ordre" style={labelStyle}>Ordre d&apos;affichage</label>
                 <input
@@ -175,13 +243,22 @@ export default function AdminServicesPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {services.map((service) => (
               <div key={service.id} className="card"
-                style={{ padding: "18px 24px", display: "flex", alignItems: "flex-start", gap: 16, opacity: deletingId === service.id ? 0.4 : 1, transition: "opacity 200ms ease", borderLeft: service.actif ? "2px solid rgba(0,200,80,0.4)" : "2px solid transparent" }}>
+                style={{ padding: "18px 24px", display: "flex", alignItems: "center", gap: 16, opacity: deletingId === service.id ? 0.4 : 1, transition: "opacity 200ms ease", borderLeft: service.actif ? "2px solid rgba(0,200,80,0.4)" : "2px solid transparent" }}>
 
                 {/* Order badge */}
-                <div style={{ flexShrink: 0, paddingTop: 2 }}>
+                <div style={{ flexShrink: 0 }}>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "#444", letterSpacing: "0.08em" }}>
                     {String(service.ordre).padStart(2, "0")}
                   </span>
+                </div>
+
+                {/* Image thumb */}
+                <div style={{ flexShrink: 0, width: 64, height: 48, borderRadius: 4, overflow: "hidden", border: "1px solid #1F1F1F", background: "#0A0A0A", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {service.image ? (
+                    <Image src={service.image} alt={service.titre} fill style={{ objectFit: "cover" }} sizes="64px" unoptimized />
+                  ) : (
+                    <ImageOff size={14} color="#333" strokeWidth={1.5} />
+                  )}
                 </div>
 
                 {/* Content */}
@@ -206,6 +283,34 @@ export default function AdminServicesPage() {
 
                 {/* Actions */}
                 <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                  {/* Hidden file input for replace */}
+                  <input
+                    ref={(el) => { fileInputs.current[service.id] = el; }}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={(e) => handleReplaceImage(service.id, e)}
+                  />
+                  <button
+                    onClick={() => fileInputs.current[service.id]?.click()}
+                    disabled={uploadingId === service.id}
+                    className="adm-btn-ghost"
+                    title={service.image ? "Remplacer l'image" : "Ajouter une image"}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, background: "none", border: "1px solid #2A2A2A", borderRadius: 4, cursor: "pointer", color: "#888", transition: "all 150ms ease" }}
+                  >
+                    <ImagePlus size={13} strokeWidth={1.5} />
+                  </button>
+                  {service.image && (
+                    <button
+                      onClick={() => handleRemoveImage(service.id)}
+                      disabled={uploadingId === service.id}
+                      className="adm-btn-ghost"
+                      title="Supprimer l'image"
+                      style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, background: "none", border: "1px solid #2A2A2A", borderRadius: 4, cursor: "pointer", color: "#888", transition: "all 150ms ease" }}
+                    >
+                      <ImageOff size={13} strokeWidth={1.5} />
+                    </button>
+                  )}
                   <button
                     onClick={() => handleToggle(service.id, service.actif)}
                     disabled={togglingId === service.id}
