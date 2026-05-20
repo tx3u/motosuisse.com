@@ -51,7 +51,7 @@ export default function HomePage() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/hero/hero-bg.jpg"
+          src="/images/hero/hero-bg.webp"
           alt=""
           style={{
             position: "absolute",
