@@ -245,7 +245,7 @@ export default function HomePage() {
             <div className="card" style={{ aspectRatio: "4/3", overflow: "hidden", position: "relative" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/hero/image%20copy%204.png"
+                src="/images/hero/image%20copy%204.webp"
                 alt="Motos à Lausanne"
                 style={{
                   position: "absolute",
@@ -358,13 +358,13 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-            <BentoTile label="Nos Motos" href="/motos" Icon={Bike} big image="/images/hero/image%20copy%203.png" />
+            <BentoTile label="Nos Motos" href="/motos" Icon={Bike} big image="/images/hero/image%20copy%203.webp" />
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <BentoTile label="Motos vendues" href="/motos" Icon={Tag} image="/images/hero/image%20copy%205.png" />
-              <BentoTile label="Pose Stickers" href="/services" Icon={Sticker} image="/images/hero/image.png" />
-              <BentoTile label="Achat de pièces" href="/services" Icon={Wrench} image="/images/hero/image%20copy%202.png" />
-              <BentoTile label="Financement" href="/contact" Icon={CreditCard} image="/images/hero/image%20copy.png" />
+              <BentoTile label="Motos vendues" href="/motos" Icon={Tag} image="/images/hero/image%20copy%205.webp" />
+              <BentoTile label="Pose Stickers" href="/services" Icon={Sticker} image="/images/hero/image.webp" />
+              <BentoTile label="Achat de pièces" href="/services" Icon={Wrench} image="/images/hero/image%20copy%202.webp" />
+              <BentoTile label="Financement" href="/contact" Icon={CreditCard} image="/images/hero/image%20copy.webp" />
             </div>
           </div>
         </div>
